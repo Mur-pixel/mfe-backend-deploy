@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  DOCKER_IMAGE: ghcr.io/${{ github.actor }}/mfe-backend-deploy:latest
+  DOCKER_IMAGE: ghcr.io/${{ secrets.ACTOR }}/mfe-backend-deploy:latest
 
 jobs:
   build:
@@ -48,7 +48,7 @@ jobs:
       ## docker build & push to production
       - name: Docker build & push to prod
         run: |
-          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_TOKEN }}
+          echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTOR }} --password-stdin
           docker buildx create --name arm64builder --use
           docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile -t ${{ env.DOCKER_IMAGE }} --push .
           docker logout
@@ -64,7 +64,7 @@ jobs:
           cd /home/ec2-user/mfe-backend-deploy
           docker-compose down
   
-          echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTOR }} --password-stdin
           docker pull ${{ env.DOCKER_IMAGE }}
   
           docker image prune -f
